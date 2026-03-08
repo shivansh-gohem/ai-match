@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevConnect — AI-Powered Developer Hub</title>
+    <meta name="description"
+        content="Connect with developers worldwide. AI-powered matchmaking, real-time chat, and project collaboration.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- ─── NAVIGATION ─── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">⚡</span>
+            <span class="brand-text">Dev<span class="accent">Connect</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active" data-section="hero" id="nav-home">Home</a>
+            <a href="#" class="nav-link" data-section="developers" id="nav-developers">Developers</a>
+            <a href="#" class="nav-link" data-section="projects" id="nav-projects">Projects</a>
+            <a href="#" class="nav-link" data-section="matchmaker" id="nav-matchmaker">AI Match</a>
+            <a href="#" class="nav-link" data-section="chat" id="nav-chat">Chat</a>
+            <a href="#" class="nav-link" data-section="ai-assistant" id="nav-ai">AI Assistant</a>
+        </div>
+        <div class="nav-stats" style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary btn-small" onclick="showAuthModal()" id="auth-btn">Login /
+                Register</button>
+            <span class="stat-badge" id="online-count">
+                <span class="pulse-dot"></span>
+                <span id="online-num">0</span> online
+            </span>
+        </div>
+    </nav>
+
+    <!-- ─── AUTH MODAL ─── -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="auth-title">Login</h3>
+                <button class="modal-close" onclick="closeModal('auth-modal')">&times;</button>
+            </div>
+
+            <div style="display:flex; gap: 1rem; margin-bottom: 1rem;">
+                <button class="btn btn-secondary btn-full" id="tab-login"
+                    onclick="switchAuthTab('login')">Login</button>
+                <button class="btn btn-secondary btn-full" id="tab-register"
+                    onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" onsubmit="handleRegister(event)" style="display:none;">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="reg-username" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Skills (comma-separated)</label>
+                    <input type="text" id="reg-skills" placeholder="Go, React, Docker" required class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── HERO SECTION ─── -->
+    <section class="section hero-section active" id="section-hero">
+        <div class="hero-content">
+            <div class="hero-badge">🤖 Powered by Gemini AI</div>
+            <h1 class="hero-title">
+                Where <span class="gradient-text">Developers</span><br>
+                Find Their <span class="gradient-text">Tribe</span>
+            </h1>
+            <p class="hero-subtitle">
+                AI-powered matchmaking connects you with the right engineers across the globe.
+                Collaborate on projects, discuss tech, and build the future — together.
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-glow" onclick="showSection('developers')" id="explore-btn">
+                    Explore Developers
+                    <span class="btn-arrow">→</span>
+                </button>
+                <button class="btn btn-secondary" onclick="showSection('projects')" id="browse-projects-btn">
+                    Browse Projects
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-num" id="stat-devs">0</span>
+                    <span class="hero-stat-label">Developers</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num" id="stat-projects">0</span>
+                    <span class="hero-stat-label">Projects</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num" id="stat-rooms">0</span>
+                    <span class="hero-stat-label">Chat Rooms</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="orbit-container">
+                <div class="orbit-ring ring-1"></div>
+                <div class="orbit-ring ring-2"></div>
+                <div class="orbit-ring ring-3"></div>
+                <div class="orbit-center">
+                    <span>🧠</span>
+                </div>
+                <div class="orbit-node node-1">🐹</div>
+                <div class="orbit-node node-2">🐍</div>
+                <div class="orbit-node node-3">⚛️</div>
+                <div class="orbit-node node-4">🦀</div>
+                <div class="orbit-node node-5">☁️</div>
+                <div class="orbit-node node-6">🤖</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── DEVELOPERS SECTION ─── -->
+    <section class="section" id="section-developers">
+        <div class="section-header">
+            <h2 class="section-title">🌍 Developer Network</h2>
+            <p class="section-desc">Engineers from around the globe, ready to collaborate.</p>
+            <div class="search-bar">
+                <input type="text" id="dev-search" placeholder="Search by skill, name, or location..."
+                    class="search-input">
+            </div>
+        </div>
+        <div class="card-grid" id="developers-grid">
+            <!-- Populated dynamically -->
+        </div>
+    </section>
+
+    <!-- ─── PROJECTS SECTION ─── -->
+    <section class="section" id="section-projects">
+        <div class="section-header">
+            <h2 class="section-title">🚀 Open Projects</h2>
+            <p class="section-desc">Find a project that fires you up, or post your own.</p>
+            <button class="btn btn-primary" onclick="showCreateProject()" id="create-project-btn">+ Post a
+                Project</button>
+        </div>
+        <div class="card-grid" id="projects-grid">
+            <!-- Populated dynamically -->
+        </div>
+
+        <!-- Create Project Modal -->
+        <div class="modal" id="create-project-modal">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h3>🚀 Post a New Project</h3>
+                    <button class="modal-close" onclick="closeModal('create-project-modal')"
+                        id="close-project-modal">&times;</button>
+                </div>
+                <form id="create-project-form" onsubmit="createProject(event)">
+                    <div class="form-group">
+                        <label>Project Title</label>
+                        <input type="text" id="project-title" placeholder="e.g. Cloud-Native Log Aggregator" required
+                            class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="project-desc"
+                            placeholder="Describe what you're building and what help you need..." required
+                            class="form-input form-textarea"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tech Stack (comma-separated)</label>
+                        <input type="text" id="project-tech" placeholder="e.g. Go, Kubernetes, Docker"
+                            class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Team Members</label>
+                        <input type="number" id="project-members" value="5" min="2" max="20" class="form-input">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full" id="submit-project-btn">Post Project</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── AI MATCHMAKER SECTION ─── -->
+    <section class="section" id="section-matchmaker">
+        <div class="section-header">
+            <h2 class="section-title">🧠 AI Matchmaker</h2>
+            <p class="section-desc">Select a developer to find their perfect collaborators, powered by Gemini AI.</p>
+        </div>
+        <div class="match-container">
+            <div class="match-select-panel glass-card">
+                <h3>Select a Developer</h3>
+                <div class="match-user-list" id="match-user-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="match-results-panel">
+                <div class="match-placeholder" id="match-placeholder">
+                    <span class="match-placeholder-icon">🔍</span>
+                    <p>Select a developer to discover AI-powered match suggestions</p>
+                </div>
+                <div class="match-results" id="match-results" style="display:none;">
+                    <h3>🎯 Top Matches</h3>
+                    <div id="match-cards"></div>
+                </div>
+                <div class="match-loading" id="match-loading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p>AI is analyzing profiles...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── CHAT SECTION ─── -->
+    <section class="section" id="section-chat">
+        <div class="section-header">
+            <h2 class="section-title">💬 Live Chat</h2>
+            <p class="section-desc">Join a room and discuss with developers in real-time.</p>
+        </div>
+        <div class="chat-container">
+            <div class="chat-interface" id="chat-interface">
+                <div class="chat-sidebar glass-card">
+                    <h4>Rooms</h4>
+                    <div class="room-list" id="room-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+                <div class="chat-main glass-card">
+                    <div class="chat-header">
+                        <h4 id="current-room-name">🌐 General</h4>
+                        <span class="room-online" id="room-online">0 online</span>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages populated dynamically -->
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type a message..." class="form-input"
+                            onkeypress="handleChatKeypress(event)">
+                        <button class="btn btn-primary" onclick="sendMessage()" id="send-msg-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── AI ASSISTANT SECTION ─── -->
+    <section class="section" id="section-ai-assistant">
+        <div class="section-header">
+            <h2 class="section-title">🤖 AI Tech Assistant</h2>
+            <p class="section-desc">Ask anything about tech, get intelligent answers powered by Gemini.</p>
+        </div>
+        <div class="ai-chat-container glass-card">
+            <div class="ai-messages" id="ai-messages">
+                <div class="ai-message ai-bot">
+                    <div class="ai-avatar">🤖</div>
+                    <div class="ai-bubble">
+                        Hey! I'm <strong>DevConnect AI</strong>. Ask me anything about programming, system design, open
+                        source, career advice... I'm here to help! 🚀
+                    </div>
+                </div>
+            </div>
+            <div class="ai-input-area">
+                <input type="text" id="ai-input" placeholder="Ask me about tech, coding, system design..."
+                    class="form-input" onkeypress="handleAIKeypress(event)">
+                <button class="btn btn-primary" onclick="sendAIMessage()" id="send-ai-btn">Ask AI</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── FOOTER ─── -->
+    <footer class="footer">
+        <p>⚡ <strong>DevConnect</strong> — Built with Go, Gin, WebSockets & Gemini AI</p>
+        <p class="footer-sub">AI-Powered Developer Matchmaking & Collaboration Hub</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/chat.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devconnect-db
+  labels:
+    app: devconnect-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devconnect-db
+  template:
+    metadata:
+      labels:
+        app: devconnect-db
+    spec:
+      containers:
+      - name: postgres
+        image: ankane/pgvector:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "devconnect"
+        - name: POSTGRES_DB
+          value: "devconnect_db"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: devconnect-secrets
+              key: db-password
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: devconnect-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: devconnect-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devconnect-db-service
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: devconnect-db

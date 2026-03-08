@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devconnect-app
+  labels:
+    app: devconnect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devconnect
+  template:
+    metadata:
+      labels:
+        app: devconnect
+    spec:
+      containers:
+      - name: devconnect-app
+        image: shivmi/ai-match:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DB_HOST
+          value: "devconnect-db-service"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "devconnect"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: devconnect-secrets
+              key: db-password
+        - name: DB_NAME
+          value: "devconnect_db"
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: devconnect-secrets
+              key: gemini-api-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devconnect-app-service
+spec:
+  type: LoadBalancer # Change to NodePort or ClusterIP if LoadBalancer is not supported locally (e.g., Minikube)
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: devconnect

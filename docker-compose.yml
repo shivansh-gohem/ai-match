@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: ankane/pgvector:latest
+    container_name: devconnect-db
+    environment:
+      POSTGRES_USER: devconnect
+      POSTGRES_PASSWORD: devconnect-super-secret-2024
+      POSTGRES_DB: devconnect_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devconnect -d devconnect_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: devconnect-app
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USER=devconnect
+      - DB_PASSWORD=devconnect-super-secret-2024
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=devconnect_db
+    # Pass .env file so GEMINI_API_KEY can be picked up
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
