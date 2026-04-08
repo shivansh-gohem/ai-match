@@ -40,14 +40,14 @@ func (db *FakeDB) Seed() {
 
 	// ---------- FAKE PROJECTS ----------
 	fakeProjects := []models.Project{
-		{ID: "proj001", Title: "Cloud-Native Log Aggregator", Description: "Build a distributed log aggregation service using Go with Kafka as the message bus. Looking for backend devs with streaming experience.", TechStack: []string{"Go", "Apache Kafka", "Docker", "Kubernetes"}, OwnerID: "user001", OwnerName: "arjun_dev", Status: "open", MaxMembers: 4},
-		{ID: "proj002", Title: "AI-Powered Code Reviewer", Description: "Develop a GitHub bot that uses LLMs to automatically review PRs and suggest improvements. Need ML and API expertise.", TechStack: []string{"Python", "Go", "FastAPI", "LLMs"}, OwnerID: "user004", OwnerName: "priya_ml", Status: "open", MaxMembers: 3},
-		{ID: "proj003", Title: "Real-Time Multiplayer Game Engine", Description: "Creating an indie multiplayer game engine with Godot. Need help with networking and procedural world generation.", TechStack: []string{"GDScript", "Godot", "C#", "WebSocket"}, OwnerID: "user012", OwnerName: "anna_gamedev", Status: "open", MaxMembers: 5},
-		{ID: "proj004", Title: "Developer Portfolio Builder", Description: "A self-hosted portfolio site generator that pulls data from GitHub, LinkedIn. Frontend-heavy project.", TechStack: []string{"React", "Next.js", "TypeScript", "Tailwind"}, OwnerID: "user005", OwnerName: "leo_frontend", Status: "open", MaxMembers: 3},
-		{ID: "proj005", Title: "Kubernetes Cost Optimizer", Description: "Build a tool that analyzes K8s cluster resource usage and suggests rightsizing. Platform engineering focus.", TechStack: []string{"Go", "Kubernetes", "Prometheus", "Grafana"}, OwnerID: "user015", OwnerName: "alex_platform", Status: "open", MaxMembers: 4},
-		{ID: "proj006", Title: "IoT Smart Agriculture System", Description: "Arduino + Raspberry Pi-based precision farming system with real-time sensor data dashboards.", TechStack: []string{"C", "Python", "MQTT", "Grafana", "ARM"}, OwnerID: "user013", OwnerName: "chen_embedded", Status: "open", MaxMembers: 4},
-		{ID: "proj007", Title: "Open Source API Gateway", Description: "Build a lightweight, extensible API gateway in Go with rate limiting, auth, and plugin support.", TechStack: []string{"Go", "gRPC", "Redis", "Docker"}, OwnerID: "user019", OwnerName: "diego_api", Status: "in-progress", MaxMembers: 5},
-		{ID: "proj008", Title: "DeFi Lending Protocol", Description: "Smart contract-based lending platform on Ethereum. Looking for Solidity and frontend devs.", TechStack: []string{"Solidity", "Hardhat", "React", "TypeScript"}, OwnerID: "user009", OwnerName: "omar_blockchain", Status: "open", MaxMembers: 4},
+		{ID: "proj001", Title: "Cloud-Native Log Aggregator", Description: "Build a distributed log aggregation service using Go with Kafka as the message bus. Looking for backend devs with streaming experience.", TechStack: []string{"Go", "Apache Kafka", "Docker", "Kubernetes"}, OwnerID: "user001", OwnerName: "arjun_dev", Status: "open", MaxMembers: 4, Members: []string{"user001", "user007"}, MemberNames: []string{"arjun_dev", "carlos_data"}},
+		{ID: "proj002", Title: "AI-Powered Code Reviewer", Description: "Develop a GitHub bot that uses LLMs to automatically review PRs and suggest improvements. Need ML and API expertise.", TechStack: []string{"Python", "Go", "FastAPI", "LLMs"}, OwnerID: "user004", OwnerName: "priya_ml", Status: "open", MaxMembers: 3, Members: []string{"user004", "user018"}, MemberNames: []string{"priya_ml", "zara_ai"}},
+		{ID: "proj003", Title: "Real-Time Multiplayer Game Engine", Description: "Creating an indie multiplayer game engine with Godot. Need help with networking and procedural world generation.", TechStack: []string{"GDScript", "Godot", "C#", "WebSocket"}, OwnerID: "user012", OwnerName: "anna_gamedev", Status: "open", MaxMembers: 5, Members: []string{"user012"}, MemberNames: []string{"anna_gamedev"}},
+		{ID: "proj004", Title: "Developer Portfolio Builder", Description: "A self-hosted portfolio site generator that pulls data from GitHub, LinkedIn. Frontend-heavy project.", TechStack: []string{"React", "Next.js", "TypeScript", "Tailwind"}, OwnerID: "user005", OwnerName: "leo_frontend", Status: "open", MaxMembers: 3, Members: []string{"user005", "user016"}, MemberNames: []string{"leo_frontend", "maya_design"}},
+		{ID: "proj005", Title: "Kubernetes Cost Optimizer", Description: "Build a tool that analyzes K8s cluster resource usage and suggests rightsizing. Platform engineering focus.", TechStack: []string{"Go", "Kubernetes", "Prometheus", "Grafana"}, OwnerID: "user015", OwnerName: "alex_platform", Status: "open", MaxMembers: 4, Members: []string{"user015", "user003", "user020"}, MemberNames: []string{"alex_platform", "mike_cloud", "sophie_devops"}},
+		{ID: "proj006", Title: "IoT Smart Agriculture System", Description: "Arduino + Raspberry Pi-based precision farming system with real-time sensor data dashboards.", TechStack: []string{"C", "Python", "MQTT", "Grafana", "ARM"}, OwnerID: "user013", OwnerName: "chen_embedded", Status: "open", MaxMembers: 4, Members: []string{"user013"}, MemberNames: []string{"chen_embedded"}},
+		{ID: "proj007", Title: "Open Source API Gateway", Description: "Build a lightweight, extensible API gateway in Go with rate limiting, auth, and plugin support.", TechStack: []string{"Go", "gRPC", "Redis", "Docker"}, OwnerID: "user019", OwnerName: "diego_api", Status: "in-progress", MaxMembers: 5, Members: []string{"user019", "user001", "user017"}, MemberNames: []string{"diego_api", "arjun_dev", "viktor_db"}},
+		{ID: "proj008", Title: "DeFi Lending Protocol", Description: "Smart contract-based lending platform on Ethereum. Looking for Solidity and frontend devs.", TechStack: []string{"Solidity", "Hardhat", "React", "TypeScript"}, OwnerID: "user009", OwnerName: "omar_blockchain", Status: "open", MaxMembers: 4, Members: []string{"user009", "user005"}, MemberNames: []string{"omar_blockchain", "leo_frontend"}},
 	}
 
 	for _, p := range fakeProjects {
@@ -55,17 +55,6 @@ func (db *FakeDB) Seed() {
 		db.Projects[p.ID] = p
 	}
 
-	// ---------- DEFAULT CHAT ROOMS ----------
-	defaultRooms := []models.ChatRoom{
-		{ID: "room_general", Name: "🌐 General", Description: "Hang out and talk about anything tech-related.", Participants: []string{}},
-		{ID: "room_golang", Name: "🐹 Go/Golang", Description: "All things Go — goroutines, channels, and beyond.", Participants: []string{}},
-		{ID: "room_devops", Name: "🚀 DevOps & Cloud", Description: "Kubernetes, Docker, Terraform, CI/CD discussions.", Participants: []string{}},
-		{ID: "room_ai", Name: "🤖 AI & Machine Learning", Description: "LLMs, RAG, embeddings, and ML engineering.", Participants: []string{}},
-		{ID: "room_opensource", Name: "💻 Open Source", Description: "Share your contributions, find projects to contribute to.", Participants: []string{}},
-		{ID: "room_career", Name: "💼 Career & Jobs", Description: "Resume reviews, interview prep, job opportunities.", Participants: []string{}},
-	}
-
-	for _, r := range defaultRooms {
-		db.Rooms[r.ID] = r
-	}
+	// DM rooms are created dynamically when users message each other
+	// No default general chat rooms — this platform uses direct messaging only
 }

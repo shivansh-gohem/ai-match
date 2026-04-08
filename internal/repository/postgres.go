@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/shiva/ai-match/pkg/logger"
 	"os"
 	"strings"
 	"time"
@@ -53,7 +53,7 @@ func NewPostgresDB() (*PostgresDB, error) {
 		return nil, fmt.Errorf("failed to initialize schema: %w", err)
 	}
 
-	log.Println("✅ Connected to PostgreSQL with pgvector")
+	logger.Println("✅ Connected to PostgreSQL with pgvector")
 	return db, nil
 }
 
@@ -78,6 +78,7 @@ func (db *PostgresDB) initSchema(ctx context.Context) error {
 			skills      TEXT[] DEFAULT '{}',
 			interests   TEXT[] DEFAULT '{}',
 			github_url  TEXT DEFAULT '',
+			github_id   TEXT DEFAULT '',
 			avatar_url  TEXT DEFAULT '',
 			location    TEXT DEFAULT '',
 			created_at  TIMESTAMPTZ DEFAULT NOW()
@@ -85,6 +86,7 @@ func (db *PostgresDB) initSchema(ctx context.Context) error {
 
 		-- Add password_hash to existing tables if needed
 		ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT NOT NULL DEFAULT '';
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS github_id TEXT DEFAULT '';
 
 		-- Projects table
 		CREATE TABLE IF NOT EXISTS projects (
@@ -147,15 +149,20 @@ func (db *PostgresDB) CreateUser(user models.User) (models.User, error) {
 	ctx := context.Background()
 	user.ID = generateID()
 	user.CreatedAt = time.Now()
+
+	// GitHub avatar: use GitHub profile picture if GithubID is provided
+	if user.GithubID != "" {
+		user.AvatarURL = fmt.Sprintf("https://github.com/%s.png", user.GithubID)
+	}
 	if user.AvatarURL == "" {
 		user.AvatarURL = fmt.Sprintf("https://api.dicebear.com/7.x/avataaars/svg?seed=%s", user.Username)
 	}
 
 	_, err := db.pool.Exec(ctx,
-		`INSERT INTO users (id, username, email, password_hash, bio, skills, interests, github_url, avatar_url, location, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+		`INSERT INTO users (id, username, email, password_hash, bio, skills, interests, github_url, github_id, avatar_url, location, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
 		user.ID, user.Username, user.Email, user.PasswordHash, user.Bio, user.Skills, user.Interests,
-		user.GithubURL, user.AvatarURL, user.Location, user.CreatedAt,
+		user.GithubURL, user.GithubID, user.AvatarURL, user.Location, user.CreatedAt,
 	)
 	if err != nil {
 		return models.User{}, fmt.Errorf("failed to create user: %w", err)
@@ -168,10 +175,10 @@ func (db *PostgresDB) GetUserByID(id string) (models.User, bool, error) {
 	ctx := context.Background()
 	var u models.User
 	err := db.pool.QueryRow(ctx,
-		`SELECT id, username, email, password_hash, bio, skills, interests, github_url, avatar_url, location, created_at
+		`SELECT id, username, email, password_hash, bio, skills, interests, github_url, github_id, avatar_url, location, created_at
 		 FROM users WHERE id = $1`, id,
 	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.Bio, &u.Skills, &u.Interests,
-		&u.GithubURL, &u.AvatarURL, &u.Location, &u.CreatedAt)
+		&u.GithubURL, &u.GithubID, &u.AvatarURL, &u.Location, &u.CreatedAt)
 
 	if err == pgx.ErrNoRows {
 		return u, false, nil
@@ -186,7 +193,7 @@ func (db *PostgresDB) GetUserByID(id string) (models.User, bool, error) {
 func (db *PostgresDB) ListUsers() ([]models.User, error) {
 	ctx := context.Background()
 	rows, err := db.pool.Query(ctx,
-		`SELECT id, username, email, password_hash, bio, skills, interests, github_url, avatar_url, location, created_at
+		`SELECT id, username, email, password_hash, bio, skills, interests, github_url, github_id, avatar_url, location, created_at
 		 FROM users ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
@@ -197,7 +204,7 @@ func (db *PostgresDB) ListUsers() ([]models.User, error) {
 	for rows.Next() {
 		var u models.User
 		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.Bio, &u.Skills, &u.Interests,
-			&u.GithubURL, &u.AvatarURL, &u.Location, &u.CreatedAt); err != nil {
+			&u.GithubURL, &u.GithubID, &u.AvatarURL, &u.Location, &u.CreatedAt); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
@@ -210,10 +217,10 @@ func (db *PostgresDB) AuthenticateUser(username, password string) (models.User, 
 	ctx := context.Background()
 	var u models.User
 	err := db.pool.QueryRow(ctx,
-		`SELECT id, username, email, password_hash, bio, skills, interests, github_url, avatar_url, location, created_at
+		`SELECT id, username, email, password_hash, bio, skills, interests, github_url, github_id, avatar_url, location, created_at
 		 FROM users WHERE username = $1 AND password_hash = $2`, username, password, // Normally compare with bcrypt
 	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.Bio, &u.Skills, &u.Interests,
-		&u.GithubURL, &u.AvatarURL, &u.Location, &u.CreatedAt)
+		&u.GithubURL, &u.GithubID, &u.AvatarURL, &u.Location, &u.CreatedAt)
 
 	if err == pgx.ErrNoRows {
 		return u, false, nil

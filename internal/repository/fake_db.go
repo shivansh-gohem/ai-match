@@ -33,16 +33,31 @@ func NewFakeDB() *FakeDB {
 // ---------- USER OPERATIONS ----------
 
 // CreateUser adds a new user to the database.
-func (db *FakeDB) CreateUser(user models.User) models.User {
+// Returns an error if the email is already registered.
+func (db *FakeDB) CreateUser(user models.User) (models.User, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
+
+	// Check for duplicate email
+	for _, existing := range db.Users {
+		if existing.Email == user.Email {
+			return models.User{}, fmt.Errorf("Email is already registered")
+		}
+	}
+
 	user.ID = generateID()
 	user.CreatedAt = time.Now()
+
+	// GitHub avatar: use GitHub profile picture if GithubID is provided
+	if user.GithubID != "" {
+		user.AvatarURL = fmt.Sprintf("https://github.com/%s.png", user.GithubID)
+	}
 	if user.AvatarURL == "" {
 		user.AvatarURL = fmt.Sprintf("https://api.dicebear.com/7.x/avataaars/svg?seed=%s", user.Username)
 	}
+
 	db.Users[user.ID] = user
-	return user
+	return user, nil
 }
 
 // GetUserByID retrieves a user by their ID.
@@ -205,6 +220,111 @@ func (db *FakeDB) FindMatchingUsers(skills []string, excludeID string) []models.
 	return matches
 }
 
+// ---------- DM OPERATIONS ----------
+
+// CreateOrGetDMRoom creates a DM room between two users, or returns the existing one.
+func (db *FakeDB) CreateOrGetDMRoom(userID1, userID2, username1, username2 string) models.ChatRoom {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Create a canonical DM room ID (sorted to ensure consistency)
+	var dmID string
+	if userID1 < userID2 {
+		dmID = "dm_" + userID1 + "_" + userID2
+	} else {
+		dmID = "dm_" + userID2 + "_" + userID1
+	}
+
+	// Check if already exists
+	if room, ok := db.Rooms[dmID]; ok {
+		return room
+	}
+
+	// Create new DM room
+	room := models.ChatRoom{
+		ID:           dmID,
+		Name:         fmt.Sprintf("💬 %s & %s", username1, username2),
+		Description:  fmt.Sprintf("Direct messages between %s and %s", username1, username2),
+		Participants: []string{userID1, userID2},
+	}
+	db.Rooms[dmID] = room
+	return room
+}
+
+// ListDMRooms lists all DM rooms for a user.
+func (db *FakeDB) ListDMRooms(userID string) []models.ChatRoom {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	var dms []models.ChatRoom
+	for _, room := range db.Rooms {
+		if len(room.ID) > 3 && room.ID[:3] == "dm_" {
+			for _, p := range room.Participants {
+				if p == userID {
+					dms = append(dms, room)
+					break
+				}
+			}
+		}
+	}
+	return dms
+}
+
+// ---------- PROJECT MEMBER OPERATIONS ----------
+
+// JoinProject adds a user to a project's members list.
+func (db *FakeDB) JoinProject(projectID, userID string) (models.Project, bool, string) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	project, ok := db.Projects[projectID]
+	if !ok {
+		return models.Project{}, false, "Project not found"
+	}
+
+	// Check if already a member
+	for _, m := range project.Members {
+		if m == userID {
+			return project, false, "Already a member of this project"
+		}
+	}
+
+	// Check member limit
+	if len(project.Members) >= project.MaxMembers {
+		return project, false, "Project is full"
+	}
+
+	// Add user
+	project.Members = append(project.Members, userID)
+
+	// Resolve username
+	if user, uok := db.Users[userID]; uok {
+		project.MemberNames = append(project.MemberNames, user.Username)
+	}
+
+	db.Projects[projectID] = project
+	return project, true, "Joined successfully"
+}
+
+// GetProjectMembers returns the member user objects for a project.
+func (db *FakeDB) GetProjectMembers(projectID string) ([]models.User, bool) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	project, ok := db.Projects[projectID]
+	if !ok {
+		return nil, false
+	}
+
+	var members []models.User
+	for _, uid := range project.Members {
+		if user, uok := db.Users[uid]; uok {
+			members = append(members, user)
+		}
+	}
+	return members, true
+}
+
 // ---------- HELPERS ----------
 
 func generateID() string {
@@ -215,3 +335,4 @@ func generateID() string {
 	}
 	return string(b)
 }
+

@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"log"
+	"github.com/shiva/ai-match/pkg/logger"
 	"sort"
 	"strings"
 
@@ -65,23 +65,23 @@ func (m *MatchService) FindMatches(userID string) ([]models.MatchResult, error) 
 
 // ragMatchUser implements the full RAG pipeline for user matching.
 func (m *MatchService) ragMatchUser(user models.User) ([]models.MatchResult, error) {
-	log.Printf("🧠 RAG Pipeline: Starting match for user %s", user.Username)
+	logger.Printf("🧠 RAG Pipeline: Starting match for user %s", user.Username)
 
 	// ─── STEP 1: EMBED the query user's profile ───
 	queryVector, _, err := m.embedder.EmbedUserProfile(user)
 	if err != nil {
-		log.Printf("⚠️  Embedding failed for user %s: %v — falling back", user.Username, err)
+		logger.Printf("⚠️  Embedding failed for user %s: %v — falling back", user.Username, err)
 		return m.fallbackMatchUser(user)
 	}
-	log.Printf("📐 Generated embedding vector of %d dimensions", len(queryVector))
+	logger.Printf("📐 Generated embedding vector of %d dimensions", len(queryVector))
 
 	// ─── STEP 2: RETRIEVE — Use pgvector to find similar developers ───
 	similarResults, err := m.pgDB.SearchSimilar(queryVector, "user", user.ID, 10)
 	if err != nil {
-		log.Printf("⚠️  pgvector search failed: %v — falling back", err)
+		logger.Printf("⚠️  pgvector search failed: %v — falling back", err)
 		return m.fallbackMatchUser(user)
 	}
-	log.Printf("🔍 Retrieved %d similar developers from pgvector", len(similarResults))
+	logger.Printf("🔍 Retrieved %d similar developers from pgvector", len(similarResults))
 
 	if len(similarResults) == 0 {
 		return []models.MatchResult{}, nil
@@ -114,7 +114,7 @@ func (m *MatchService) ragMatchUser(user models.User) ([]models.MatchResult, err
 			if len(results) > 5 {
 				results = results[:5]
 			}
-			log.Printf("✅ RAG Pipeline complete — %d matches generated", len(results))
+			logger.Printf("✅ RAG Pipeline complete — %d matches generated", len(results))
 			return results, nil
 		}
 	}
@@ -168,12 +168,12 @@ func (m *MatchService) FindMatchesForProject(projectID string) ([]models.MatchRe
 
 // ragMatchProject implements the RAG pipeline for project-to-developer matching.
 func (m *MatchService) ragMatchProject(project models.Project) ([]models.MatchResult, error) {
-	log.Printf("🧠 RAG Pipeline: Finding contributors for project '%s'", project.Title)
+	logger.Printf("🧠 RAG Pipeline: Finding contributors for project '%s'", project.Title)
 
 	// ─── STEP 1: EMBED the project description ───
 	queryVector, _, err := m.embedder.EmbedProjectProfile(project)
 	if err != nil {
-		log.Printf("⚠️  Embedding failed for project: %v — falling back", err)
+		logger.Printf("⚠️  Embedding failed for project: %v — falling back", err)
 		return m.fallbackMatchProject(project)
 	}
 
@@ -287,11 +287,11 @@ func (m *MatchService) FindConnections(userID string) ([]models.ConnectionSugges
 // Called during startup to populate the vector database.
 func (m *MatchService) EmbedAllProfiles() error {
 	if !m.usePostgres || !m.embedder.IsAvailable() {
-		log.Println("⚠️  Skipping embedding — PostgreSQL or embeddings not available")
+		logger.Println("⚠️  Skipping embedding — PostgreSQL or embeddings not available")
 		return nil
 	}
 
-	log.Println("🧠 Generating embeddings for all profiles...")
+	logger.Println("🧠 Generating embeddings for all profiles...")
 
 	// Embed all users
 	users, err := m.pgDB.ListUsers()
@@ -302,7 +302,7 @@ func (m *MatchService) EmbedAllProfiles() error {
 	for _, user := range users {
 		vector, text, err := m.embedder.EmbedUserProfile(user)
 		if err != nil {
-			log.Printf("⚠️  Failed to embed user %s: %v", user.Username, err)
+			logger.Printf("⚠️  Failed to embed user %s: %v", user.Username, err)
 			continue
 		}
 
@@ -313,10 +313,10 @@ func (m *MatchService) EmbedAllProfiles() error {
 			Vector:     vector,
 		})
 		if err != nil {
-			log.Printf("⚠️  Failed to store embedding for %s: %v", user.Username, err)
+			logger.Printf("⚠️  Failed to store embedding for %s: %v", user.Username, err)
 			continue
 		}
-		log.Printf("  ✅ Embedded: %s", user.Username)
+		logger.Printf("  ✅ Embedded: %s", user.Username)
 	}
 
 	// Embed all projects
@@ -328,7 +328,7 @@ func (m *MatchService) EmbedAllProfiles() error {
 	for _, project := range projects {
 		vector, text, err := m.embedder.EmbedProjectProfile(project)
 		if err != nil {
-			log.Printf("⚠️  Failed to embed project %s: %v", project.Title, err)
+			logger.Printf("⚠️  Failed to embed project %s: %v", project.Title, err)
 			continue
 		}
 
@@ -339,13 +339,13 @@ func (m *MatchService) EmbedAllProfiles() error {
 			Vector:     vector,
 		})
 		if err != nil {
-			log.Printf("⚠️  Failed to store embedding for project %s: %v", project.Title, err)
+			logger.Printf("⚠️  Failed to store embedding for project %s: %v", project.Title, err)
 			continue
 		}
-		log.Printf("  ✅ Embedded: %s", project.Title)
+		logger.Printf("  ✅ Embedded: %s", project.Title)
 	}
 
-	log.Printf("🧠 Embedding complete — %d users, %d projects", len(users), len(projects))
+	logger.Printf("🧠 Embedding complete — %d users, %d projects", len(users), len(projects))
 	return nil
 }
 

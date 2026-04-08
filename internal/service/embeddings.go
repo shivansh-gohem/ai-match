@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/shiva/ai-match/pkg/logger"
 	"os"
 	"strings"
 
@@ -23,14 +23,14 @@ type EmbeddingService struct {
 func NewEmbeddingService() *EmbeddingService {
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" || apiKey == "your-gemini-api-key-here" {
-		log.Println("⚠️  GEMINI_API_KEY not set or is placeholder — embedding features will be disabled")
+		logger.Println("⚠️  GEMINI_API_KEY not set or is placeholder — embedding features will be disabled")
 		return &EmbeddingService{}
 	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		log.Printf("⚠️  Failed to create Gemini client for embeddings: %v", err)
+		logger.Printf("⚠️  Failed to create Gemini client for embeddings: %v", err)
 		return &EmbeddingService{}
 	}
 

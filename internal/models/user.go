@@ -11,6 +11,7 @@ type User struct {
 	Skills    []string  `json:"skills"`
 	Interests []string  `json:"interests"`
 	GithubURL string    `json:"github_url"`
+	GithubID  string    `json:"github_id"`
 	AvatarURL string    `json:"avatar_url"`
 	Location     string    `json:"location"`
 	PasswordHash string    `json:"-"` // Don't expose in JSON
@@ -25,6 +26,7 @@ type UserCreateRequest struct {
 	Skills    []string `json:"skills"`
 	Interests []string `json:"interests"`
 	GithubURL string   `json:"github_url"`
+	GithubID  string   `json:"github_id" binding:"required"`
 	Location  string   `json:"location"`
 	Password  string   `json:"password" binding:"required"`
 }
@@ -33,4 +35,11 @@ type UserCreateRequest struct {
 type UserLoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+// AuthResponse is the response payload for a successful login,
+// containing the user data and a JWT token.
+type AuthResponse struct {
+	User  User   `json:"user"`
+	Token string `json:"token"`
 }

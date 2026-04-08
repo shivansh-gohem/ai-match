@@ -12,6 +12,8 @@ type Project struct {
 	OwnerName   string    `json:"owner_name"`
 	Status      string    `json:"status"` // "open", "in-progress", "completed"
 	MaxMembers  int       `json:"max_members"`
+	Members     []string  `json:"members"`      // User IDs of team members
+	MemberNames []string  `json:"member_names"`  // Usernames of team members
 	CreatedAt   time.Time `json:"created_at"`
 }
 

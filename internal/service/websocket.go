@@ -2,7 +2,7 @@ package service
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/shiva/ai-match/pkg/logger"
 	"sync"
 	"time"
 
@@ -77,7 +77,7 @@ func (h *Hub) Run() {
 			data, _ := json.Marshal(joinMsg)
 			h.BroadcastToRoom(client.RoomID, data)
 
-			log.Printf("✅ %s joined room %s", client.Username, client.RoomID)
+			logger.Printf("✅ %s joined room %s", client.Username, client.RoomID)
 
 		case client := <-h.Unregister:
 			h.mu.Lock()
@@ -100,7 +100,7 @@ func (h *Hub) Run() {
 			data, _ := json.Marshal(leaveMsg)
 			h.BroadcastToRoom(client.RoomID, data)
 
-			log.Printf("❌ %s left room %s", client.Username, client.RoomID)
+			logger.Printf("❌ %s left room %s", client.Username, client.RoomID)
 
 		case message := <-h.Broadcast:
 			var wsMsg models.WSMessage
@@ -164,7 +164,7 @@ func (c *Client) ReadPump() {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("WebSocket error: %v", err)
+				logger.Printf("WebSocket error: %v", err)
 			}
 			break
 		}

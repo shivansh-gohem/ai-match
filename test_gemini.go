@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/shiva/ai-match/pkg/logger"
 	"os"
 
 	"github.com/google/generative-ai-go/genai"
@@ -18,7 +18,7 @@ func main() {
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
+		logger.Fatalf("Failed to create client: %v", err)
 	}
 	defer client.Close()
 

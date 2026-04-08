@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/shiva/ai-match/pkg/logger"
 	"os"
 	"strings"
 
@@ -23,14 +23,14 @@ type GeminiService struct {
 func NewGeminiService() *GeminiService {
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" || apiKey == "your-gemini-api-key-here" {
-		log.Println("⚠️  GEMINI_API_KEY not set or is placeholder — AI features will use fallback mode")
+		logger.Println("⚠️  GEMINI_API_KEY not set or is placeholder — AI features will use fallback mode")
 		return &GeminiService{}
 	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		log.Printf("⚠️  Failed to create Gemini client: %v — using fallback mode", err)
+		logger.Printf("⚠️  Failed to create Gemini client: %v — using fallback mode", err)
 		return &GeminiService{}
 	}
 
@@ -105,7 +105,7 @@ CANDIDATE_NAME|SCORE|REASON
 	ctx := context.Background()
 	resp, err := g.model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
-		log.Printf("Gemini API error: %v — falling back", err)
+		logger.Printf("Gemini API error: %v — falling back", err)
 		return g.fallbackMatch(user, candidates), nil
 	}
 
